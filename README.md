@@ -5,7 +5,7 @@
 
 # USAGE:
 ## 1) Default Snippet
-```javascript
+```html
   <script type="text/javascript">
 
     var _rtq = _rtq || [];
@@ -22,8 +22,8 @@
 ```
 
 ## 2) Call a recolytic action
-```javascript
-<script type="text/javascript">
+```html
+  <script type="text/javascript">
 
     var _rtq = _rtq || [];
     _rtq.push(['action_name', 'argument_1', 'argument_2', ..., 'argument_n']);
