@@ -21,47 +21,87 @@
     return Object.prototype.toString.apply(f) === '[object Function]';
   }
 
+  function tryGetOpenGraphAttribute(name){
+    var elem = $("meta[name='og\\:"+ name+ "']");
+    if(elem && elem.attr('content')) return elem.attr('content');
+    else return false;
+  }
+
+  function apiCollectCall(cb, params){
+    $.ajax({
+      url:this.options.baseUrl+'collect/'+this.options.apiKey
+      , dataType:'jsonp'
+      , data: params
+      }).always(cb || function(){});
+  }
+
+  function getQueryStringParameterByName(pageUrl, name) {
+      name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+      var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+          results = regex.exec(pageUrl);
+      return results == null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+  }  
+
+  //available actions 
   var actions = {
     set:function(key, value){
       this.options = this.options || {};
       this.options[key] = value;
       return true;
     }
-  , collect:function(url, cb){
+  , collect:function(rxid, cb){ // resource id, call back
       if(!this.options.apiKey) return false;
-      if(isFunction(url)){
-        cb = url;
-        url = undef;
+      if(isFunction(rxid)){
+        cb = rxid;
+        rxid = undef;
       }
-      $.ajax({
-        url:this.options.baseUrl+'collect/'+this.options.apiKey
-      , dataType:'jsonp'
-      , data:{ 'rxid': url || location.href }
-      }).always(cb || function(){});
+      //if open graph option is active 
+      if(this.options.ograph){
+        var id = tryGetOpenGraphAttribute('url')
+          , title = tryGetOpenGraphAttribute('title')
+          , image = tryGetOpenGraphAttribute('image');
+
+        if(id) {
+          var params = {};
+          params['rxid'] = id; 
+          if(title) params['t'] = title;
+          if(image) params['m'] = image;
+          apiCollectCall(params, cb);
+        } else {
+          apiCollectCall({ 'rxid': rxid || location.href }, cb);  
+        }
+      } else {
+        apiCollectCall({ 'rxid': rxid || location.href }, cb);
+      }
       return true;
     }
-  , uptake:function(url, context, cb){
-      if(!this.options['apiKey']) return false;
-      if(isFunction(context)){
-        cb = context;
-        context = undef;
+  , uptake:function(rxid, page, strategy, cb){ 
+      //rxid: the id of resource that user clicked on
+      //page: page in which the recommendation was submitted
+      //strategy: the used recommendation strategy
+      if(!this.options['apiKey'] || !rxid ) return false;
+      if(isFunction(page)){
+        cb = page;
+        page = undef;
       }
-      /*
-       * CX ID = context id (url of the page where recomendation is from)
-       * RX ID = resource id (url of the rcommended page clicked by the user)
-       */
+      if(isFunction(strategy)){
+        cb = strategy;
+        strategy = undef;
+      }
+
+      var params = {};
+      params['rxid'] = rxid;
+      params['location'] = page || 'not filled'; 
+      params['strategy'] = strategy || 'not filled';
+
       $.ajax({
         url:this.options.baseUrl+'measure/uptake/'+this.options.apiKey
       , dataType:'jsonp'
-      , data:{
-          'rxid':url
-        , 'cxid':context || location.href
-        }
+      , data: params
       }).always(cb || function(){});
       return true;
     }
   }
-
 
   /*
    * Recolytic OBJECT
@@ -72,7 +112,6 @@
     this.initUpTake();
     this.initAutoCollect();
   }
-
 
   /*
    * Recolytic init functions
@@ -101,11 +140,22 @@
       var $el = $(ev.currentTarget)
         , url = $el.attr('href').replace(/[?&]recolytic-uptake$/, '')
         ;
-      self.push(['uptake', url, function(){
-        location.href = url;
-      }]);
-    });
 
+      var rxid = getQueryStringParameterByName(url, "recolytic-id") ;
+         
+      if(rxid){
+        var strategy = getQueryStringParameterByName(url, "recolytic-s")
+          , page = getQueryStringParameterByName(url, "recolytic-l"); // page category
+
+        self.push(['uptake', rxid, page, strategy, function(){
+          location.href = url;
+        }]);    
+      } else {
+        self.push(['uptake', url, null, null, function(){
+          location.href = url;
+        }]);
+      }
+    });
   }
 
   Recolytic.prototype.initAutoCollect = function(){
@@ -144,9 +194,12 @@
         }
       }
     }
-
   }
-
+  // init the recolytic object
   new Recolytic();
+
+  //recommendation object 
+  return actions;
+
 
 })();
