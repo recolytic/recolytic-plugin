@@ -1,6 +1,6 @@
 # recolytic-plugin
 
-Common <a href="http://www.recolytic.com">recolytic</a> client are gathered in recolytic-plugin project. Each client implements the interaction with recolytic web api: 
+Common <a href="http://www.recolytic.com">recolytic</a> clients are gathered in recolytic-plugin project. Each client implements the interaction with recolytic web api: 
 
 * User action COLLECT
 * User uptakes MESURE
