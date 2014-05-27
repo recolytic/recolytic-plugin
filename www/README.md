@@ -1,10 +1,8 @@
+## REQUIREMENTS:
+### jQuery
 
-# REQUIREMENTS:
-## jQuery
-
-
-# USAGE:
-## 1) Default Snippet
+## USAGE:
+### 1) Default Snippet
 ```html
   <script type="text/javascript">
 
@@ -21,7 +19,7 @@
   </script>
 ```
 
-## 2) Call a recolytic action
+### 2) Call a recolytic action
 ```html
   <script type="text/javascript">
 
@@ -31,14 +29,13 @@
   </script>
 ```
 
-# OPTIONS:
+## OPTIONS:
 * apiKey       : your recolytic API key (required to used recolytic API)
 * autoCollect  : activate/deactivate the collecting of page/ressource view (default true)
 * trackUpTake  : activate/deactivate the tracking of click of recommended links  (default true)
 * baseUrl      : default //www.recolytic.com/api/engine/
 
-
-# ACTIONS:
+## ACTIONS:
 * set(key, value): allows you to set an option
     * key
     * value
