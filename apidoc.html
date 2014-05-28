@@ -1,0 +1,899 @@
+<html lang="en" ng-app="recolytic" class="ng-scope"><head>
+	<body>
+		<!--wrapper-->
+		<h2 >API DOCUMENTATION</h2>
+		<p>The API is organised in 3 sections: COLLECT / RECOMMEND / MEASURE.</p>
+		<p>All API endpoints are jsonp-compliant.</p>
+		
+		<!--Collect-->
+		
+		<h3>COLLECT: Gather user action</h3>
+      	<ul>
+      		<li>
+      			<span > GET</span>
+				<span >/api/engine/collect/{apikey}?rxid={resourceId}&amp;t={title}&amp;m={media}&amp;aw={actionWeight}&amp;rxw={resourceWeight}&amp;mid={memberId}</span>
+				<span >Collect user actions on resources</span>
+				<dl>
+					<dt><b>Implementation Notes</b></dt>
+					<dd>Returns as soon as possible even before the action/resource storage is acknowledged.</dd>
+					<dt><b>Parameters</b></dt>	
+					<dd>
+					<table>
+						
+							<tr>
+								<th>Parameter</th>
+								<th>Description</th>
+								<th>Type</th>
+								<th>Mandatory</th>
+							</tr>
+						
+						
+							<tr>
+								<td><strong>apikey</strong></td>
+								<td>subscription key</td>
+								<td>string</td>
+								<td>YES</td>
+							</tr>
+							<tr>
+								<td><strong>resourceId</strong></td>
+								<td>resource id, may be your product id, movie id, book id...</td>
+								<td>string</td>
+								<td>YES</td>
+							</tr>
+							<tr>
+								<td><strong>title</strong></td>
+								<td>Resource title</td>
+								<td>string</td>
+								<td>NO, if the subscription resources' are declared through manual feed upload, this parameter is ignored.</td>
+							</tr>		
+							<tr>
+								<td><strong>media</strong></td>
+								<td>URL of the resource image</td>
+								<td>string</td>
+								<td>NO, if the subscription resources' are declared through manual feed upload, this parameter is ignored.</td>
+							</tr>
+
+							<tr>
+								<td><strong>actionWeight</strong></td>
+								<td>Specify the weight (importance) of a user action, for example we may define that a product visit has weight 1, add to cart has weight 2 and buy has weight 4.</td>
+								<td>int</td>
+								<td>NO, default is 1.</td>
+							</tr>
+							<tr>
+								<td><strong>resourceWeight</strong></td>
+								<td>Set the weight / priority of a resource. A resource with an importante weight has more chance to appear in the recommendations.</td>
+								<td>int</td>
+								<td>NO, if the subscription resources' are declared through manual feed upload, this parameter is ignored.</td>
+							</tr>
+							<tr>
+								<td><strong>memberId</strong></td>
+								<td>Member Id, your internal unique identifier of your users, for example the member id may be the user nickname on your website or his/her email.</td>
+								<td>string</td>
+								<td>NO</td>
+							</tr>
+							
+					</table>
+					</dd>  									
+					<dt><b>Response</b></dt>
+					<dd>{}</dd><dd>
+					</dd><dt><b>Response message</b></dt>
+					<dd>
+					<table>
+						
+							<tr>
+								<th>HTTP Status Code</th>
+								<th>Message</th>
+							</tr>
+						
+						
+							<tr>
+								<td><strong>400</strong></td>
+								<td>invalid api key</td>
+							</tr>
+							<tr>
+								<td><strong>400</strong></td>
+								<td>Missing params, rxid</td>
+							</tr>
+							<tr>
+								<td><strong>400</strong></td>
+								<td>subscription resource declation mode is not supported.</td>
+							</tr>
+				
+					</table> 										
+					</dd>
+				</dl>
+			</li>
+      		<li>
+				<span> GET</span>
+				<span >/api/engine/collect/member/{apikey}?mid={memberid}</span>
+				<span >Links a an indentified member with all its anonymous channels</span></div>
+            	<dl>
+					<dt><b>Implementation Notes</b></dt>
+					<dd>Link all devices (channels:<i> iphone, PC, ipad</i>) used by a well identified user (member)</dd>
+					<dt><b>Parameters</b></dt>	
+					<dd>
+						<table>
+						
+							<tr>
+								<th>Parameter</th>
+								<th>Description</th>
+								<th>Type</th>
+								<th>Mandatory</th>
+							</tr>
+						
+						
+							<tr>
+								<td><strong>apikey</strong></td>
+								<td>subscription key</td>
+								<td>string</td>
+								<td>YES</td>
+							</tr>
+							<tr>
+								<td><strong>memberId</strong></td>
+								<td>Member Id, your internal unique identifier of your users, for example the member id may be the user nickname on your website or his/her email.</td>
+								<td>string</td>
+								<td>YES</td>
+							</tr>
+						
+					</table>
+					</dd>
+					<dt><b>Response</b></dt>
+					<dd>{}</dd>
+					<dd></dd>
+					<dt><b>Response message</b></dt>
+					<dd>
+					<table>
+						
+							<tr>
+								<th>HTTP Status Code</th>
+								<th>Message</th>
+							</tr>
+						
+						
+							<tr>
+								<td><strong>400</strong></td>
+								<td>invalid api key</td>
+							</tr>
+				
+					</table>
+					</dd>
+				</dl>						
+      		</li>
+      	</ul>
+	      	
+		<!--RECOMMEND-->
+		<h3>RECOMMEND: Suggest a set of resources to the user based on specific recommendation strategy</h3>
+		<ul>
+			<li>
+			  	<span>GET</span>
+			  	<span >/api/engine/recommend/np/topn/{apikey}?sc={scope1}&amp;sc={scope2}&amp;l={limit}&amp;sk={skip}&amp;location={location}</span>
+			  	<span >Most popular resources</span>
+										  	
+	    		<dl>
+					<dt><b>Implementation Notes</b></dt>
+					<dd>This is a non personal recommendation strategy. Most popular resources returns resources that have largest numbers of actions (visits). You may bais the default output by giving some resource a higher priority (or weight). These resources will have more chance to appear in the recommended list. </dd>
+					<dt>Scoring</dt>
+					<dd>The score for this strategy is computed as follow:
+						<ul class="unstyled">
+							<li>rx: a given resource</li>
+							<li>A: the number of actions applied on rx</li>
+							<li>ageGravity = 1 if resource freshness is disabled, if it's enabled ageGravity = (Now.DayCount - rx.creationDate.DayCount)<sup>-1/2</sup> </li>  
+							<li><i> rx score =  A  * rx.weight * ageGravity.</i></li>
+
+						</ul>
+					Example:
+					<ul class="unstyled">
+							<li>rx: T-shirt, the weight is set to 2. The T-shirt was created 3 days ago.</li>
+							<li>A: the T-Shirt has 200 visits.</li>
+							<li>Resource freshness is enabled, ageGravity = 4 <sup>-1/2</sup> = 0.5 </li>
+							<li>score = 200 * 2 * 0.5 = 200</li>
+						</ul>
+					 </dd> 
+					<dt><b>Parameters</b></dt>	
+					<dd>
+						<table>
+							
+								<tr>
+									<th>Parameter</th>
+									<th>Description</th>
+									<th>Type</th>
+									<th>Mandatory</th>
+								</tr>
+							
+							
+								<tr>
+									<td><strong>apikey</strong></td>
+									<td>subscription key</td>
+									<td>string</td>
+									<td>YES</td>
+								</tr>
+								<tr>
+									<td><strong>scope</strong></td>
+									<td>All the recommended resources belongs to the given scope, for example we don't want to recommend man pants when the user is on woman t-shirt catalog page. To address this requirement, we attach each product to one of these two scopes: <i>man, woman</i></td>
+									<td>array of string</td>
+									<td>NO</td>
+								</tr>
+								<tr>
+									<td><strong>limit</strong></td>
+									<td>max number of recommended resources</td>
+									<td>int</td>
+									<td>NO, default is 5</td>
+								</tr>		
+								<tr>
+									<td><strong>skip</strong></td>
+									<td>Number of top ranking resources to skip, used to avoid returning obvious resources</td>
+									<td>int</td>
+									<td>NO</td>
+								</tr>
+								<tr>
+									<td><strong>location</strong></td>
+									<td>The page in which the recommendation is called</td>
+									<td>string</td>
+									<td>NO, but it's highly recommended to provid it in order to have a coherent and granular reporting, example:<i> product_page, landing_page, checkout</i></td>
+								</tr>
+								
+						</table>
+					</dd>  									
+					<dt><b>Response</b></dt>
+					<dd><pre>[ {'id': (string) resource id , 'title': (string) resource title (optional), 'media': (string) resource asset (optional), 'score': (integer) resource score },...] </pre>
+					  <br>
+					  example:
+					  <pre> [ { 'id': 'G_44178374_320', 'title': 'este en velours détails en... 129,90 €', 'media': 'http://assets.recolytic.com/G_44178374_320.jpg', 'score': 8 }, ...]</pre>
+					</dd>
+					<dt><b>Response message</b></dt>
+					<dd>
+						<table>
+							
+								<tr>
+									<th>HTTP Status Code</th>
+									<th>Message</th>
+								</tr>
+							
+							
+								<tr>
+									<td><strong>400</strong></td>
+									<td>invalid api key</td>
+								</tr>
+					
+						</table> 										
+					</dd>
+				</dl>
+		  	</li>
+		  	<li>
+		  		<span>  GET</span>
+		  		<span >/api/engine/recommend/np/priorityrx/{apikey}?sc={scope1}&amp;rxwt={weightTHR}&amp;l={limit}&amp;sk={skip}&amp;location={location}</span>
+		  		<span >High priority resources</span>
+        		<dl>
+					<dt><b>Implementation Notes</b></dt>
+					<dd>This is a non personal recommendation strategy. High priority resources returns resources that have the biggest priority (weight). You may set a weight threshold to start considering only resource with bigger priority.</dd>
+					<dt>Scoring</dt>
+					<dd>The score for this strategy is computed as follow:
+						<ul class="unstyled">
+							<li>rx: a given resource</li>
+							<li>ageGravity = 1 if resource freshness is disabled, if it's enabled ageGravity = (Now.DayCount - rx.creationDate.DayCount)<sup>-1/2</sup> </li>  
+							<li><i> rx score = rx.weight * ageGravity.</i></li>
+
+						</ul>
+					Example:
+					<ul class="unstyled">
+							<li>rx: T-shirt, the weight is set to 10. The T-shirt was created 3 days ago.</li>
+							<li>Resource freshness is enabled, ageGravity = 4 <sup>-1/2</sup> = 0.5 </li>
+							<li>score =  10 * 0.5 = 5</li>
+						</ul>
+					 </dd> 
+					<dt><b>Parameters</b></dt>	
+					<dd>
+						<table>
+							
+								<tr>
+									<th>Parameter</th>
+									<th>Description</th>
+									<th>Type</th>
+									<th>Mandatory</th>
+								</tr>
+							
+							
+								<tr>
+									<td><strong>apikey</strong></td>
+									<td>subscription key</td>
+									<td>string</td>
+									<td>YES</td>
+								</tr>
+								<tr>
+									<td><strong>scope</strong></td>
+									<td>All the recommended resources belongs to the given scope, for example we don't want to recommend man pants when the user is on woman t-shirt catalog page. To address this requirement, we attach each product to one of these two scopes: <i>man, woman</i></td>
+									<td>array of string</td>
+									<td>NO</td>
+								</tr>
+								<tr>
+									<td><strong>weightTHR</strong></td>
+									<td>All resources with a weight less than this threshold will not be considered</td>
+									<td>int</td>
+									<td>NO</td>
+								</tr>
+								<tr>
+									<td><strong>limit</strong></td>
+									<td>max number of recommended resources</td>
+									<td>int</td>
+									<td>NO, default is 5</td>
+								</tr>		
+								<tr>
+									<td><strong>skip</strong></td>
+									<td>Number of top ranking resources to skip, used to avoid returning obvious resources</td>
+									<td>int</td>
+									<td>NO</td>
+								</tr>
+								<tr>
+									<td><strong>location</strong></td>
+									<td>The page in which the recommendation is called</td>
+									<td>string</td>
+									<td>NO, but it's highly recommended to provid it in order to have a coherent and granular reporting, example:<i> product_page, landing_page, checkout</i></td>
+								</tr>
+								
+						</table>
+					</dd>  									
+					<dt><b>Response</b></dt>
+					<dd><pre>[ {'id': (string) resource id , 'title': (string) resource title (optional), 'media': (string) resource asset (optional), 'score': (integer) resource score },...] </pre>
+					  <br>
+					  example:
+					  <pre> [ { 'id': 'G_44178374_320', 'title': 'este en velours détails en... 129,90 €', 'media': 'http://assets.recolytic.com/G_44178374_320.jpg', 'score': 8 }, ...]</pre>
+					</dd>
+					<dt><b>Response message</b></dt>
+					<dd>
+						<table>
+							
+								<tr>
+									<th>HTTP Status Code</th>
+									<th>Message</th>
+								</tr>
+							
+							
+								<tr>
+									<td><strong>400</strong></td>
+									<td>invalid api key</td>
+								</tr>
+					
+						</table> 										
+					</dd>
+				</dl>
+		  	</li>
+		  	<li>
+		  		<span>  GET</span>
+		  		<span >/api/engine/recommend/cf/ii/{apikey}?rxid={resourceId}&amp;sc={isScoped}&amp;l={limit}&amp;sk={skip}&amp;location={location}</span>
+				<span>Item to item collaborative filtering</span>
+
+				<dl>
+					<dt><b>Implementation Notes</b></dt>
+					<dd>What other resources have been seen by users that saw a given resource? This is a non personal recommendation strategy. It uses collaborative techniques. It's 2 steps process, first we determine the users that show interest to a given resource, then we identify a set of common interesting resources for the previously identified users.</dd>
+					<dt>Scoring</dt>
+					<dd>The score for this strategy is computed as follow:
+						<ul class="unstyled">
+							<li>rx<sub>0</sub>: The resource for which applying this strategy</li>
+							<li>Users that act on rx<sub>0</sub> also act on rx, another resource</li>
+							<li>a<sub>i</sub>:a user action on rx</li>
+							<li>A is set of all disctinct actions on rx from users that act on rx<sub>0</sub></li>
+							<li>ageGravity = 1 if resource freshness is disabled, if it's enabled ageGravity = (Now.DayCount - rx.creationDate.DayCount)<sup>-1/2</sup> </li>  
+							<li><i> rx score = Sum<sub>A</sub>(a<sub>i</sub>) * rx.weight * ageGravity.</i></li>
+						</ul>
+					Example:
+					<ul class="unstyled">
+							<li>rx<sub>0</sub>: T-shirt.</li>
+							<li>3 users that act on rx<sub>0</sub> also act on rx: a jean with weight 2,  The jean was created 3 days ago.</li>
+							<li>2 users added to cart rx</li>
+							<li>1 user bought rx</li>
+							<li>The buy action is set to 5</li>
+							<li>The add to cart is set to 3</li>
+							<li>Resource freshness is enabled, ageGravity = 4 <sup>-1/2</sup> = 0.5 </li>
+							<li>rx score =  (5 + 3 + 3) * 2 * 0.5 = 11</li>
+						</ul>
+					 </dd> 
+					<dt><b>Parameters</b></dt>	
+					<dd>
+						<table>
+							
+								<tr>
+									<th>Parameter</th>
+									<th>Description</th>
+									<th>Type</th>
+									<th>Mandatory</th>
+								</tr>
+							
+							
+								<tr>
+									<td><strong>apikey</strong></td>
+									<td>subscription key</td>
+									<td>string</td>
+									<td>YES</td>
+								</tr>
+								<tr>
+									<td><strong>resourceId</strong></td>
+									<td>resource id</td>
+									<td>string</td>
+									<td>YES</td>
+								</tr>
+								<tr>
+									<td><strong>isScoped</strong></td>
+									<td>if specified the recommended resources share the same scopes as the concerned resource</td>
+									<td>string</td>
+									<td>NO</td>
+								</tr>
+								<tr>
+									<td><strong>limit</strong></td>
+									<td>max number of recommended resources</td>
+									<td>int</td>
+									<td>NO, default is 5</td>
+								</tr>		
+								<tr>
+									<td><strong>skip</strong></td>
+									<td>Number of top ranking resources to skip, used to avoid returning obvious resources</td>
+									<td>int</td>
+									<td>NO</td>
+								</tr>
+								<tr>
+									<td><strong>location</strong></td>
+									<td>The page in which the recommendation is called</td>
+									<td>string</td>
+									<td>NO, but it's highly recommended to provid it in order to have a coherent and granular reporting, example:<i> product_page, landing_page, checkout</i></td>
+								</tr>
+								
+						</table>
+					</dd>  									
+					<dt><b>Response</b></dt>
+					<dd><pre>[ {'id': (string) resource id , 'title': (string) resource title (optional), 'media': (string) resource asset (optional), 'score': (integer) resource score },...] </pre>
+					  <br>
+					  example:
+					  <pre> [ { 'id': 'G_44178374_320', 'title': 'este en velours détails en... 129,90 €', 'media': 'http://assets.recolytic.com/G_44178374_320.jpg', 'score': 8 }, ...]</pre>
+					</dd>
+					<dt><b>Response message</b></dt>
+					<dd>
+						<table>
+							
+								<tr>
+									<th>HTTP Status Code</th>
+									<th>Message</th>
+								</tr>
+							
+							
+								<tr>
+									<td><strong>400</strong></td>
+									<td>invalid api key</td>
+								</tr>
+								<tr>
+									<td><strong>400</strong></td>
+									<td>missing resource id</td>
+								</tr>
+					
+						</table> 										
+					</dd>
+				</dl>				
+		  	</li>
+		  	<li>
+				<span>  GET</span>
+				<span >/api/engine/recommend/cf/basket/{apikey}?rx={rxid1}&amp;rx={rxid2}&amp;at={actionTHR}&amp;l={limit}&amp;sk={skip}&amp;location={location}</span>
+				<span >Co-Occurence</span>
+        		<dl>
+					<dt><b>Implementation Notes</b></dt>
+					<dd>Having a group of resources, find other resources that can be a part of that group based on users’ behaviors: For a shopping cart for example, product C was frequently associated with product A and B. This is a non personal recommendation strategy. It uses collaborative techniques, it is also know as basket recommender. We may also consider only actions with weight bigger than a specified threshold.</dd>
+					<dt>Scoring</dt>
+					<dd>The score for this strategy is computed as follow:
+						<ul class="unstyled">
+							<li>rx<sub>0</sub>, rx<sub>1</sub>, ... rx<sub>n</sub>: the candidate resources</li>
+							<li>u<sub>i</sub> a user that act on all candidate resources and on a resource rx</li>  
+							<li><i>rx score = count of u<sub>i</sub></i></li>
+						</ul>
+					 </dd> 
+					<dt><b>Parameters</b></dt>	
+					<dd>
+						<table>
+							
+								<tr>
+									<th>Parameter</th>
+									<th>Description</th>
+									<th>Type</th>
+									<th>Mandatory</th>
+								</tr>
+							
+							
+								<tr>
+									<td><strong>apikey</strong></td>
+									<td>subscription key</td>
+									<td>string</td>
+									<td>YES</td>
+								</tr>
+								<tr>
+									<td><strong>rxid<sub>i</sub></strong></td>
+									<td>List of candidate resources</td>
+									<td>array of string</td>
+									<td>YES</td>
+								</tr>
+								<tr>
+									<td><strong>actionTHR</strong></td>
+									<td>All actions with weight less than action threshold will not be considered</td>
+									<td>int</td>
+									<td>NO</td>
+								</tr>
+								<tr>
+									<td><strong>limit</strong></td>
+									<td>max number of recommended resources</td>
+									<td>int</td>
+									<td>NO, default is 5</td>
+								</tr>		
+								<tr>
+									<td><strong>skip</strong></td>
+									<td>Number of top ranking resources to skip, used to avoid returning obvious resources</td>
+									<td>int</td>
+									<td>NO</td>
+								</tr>
+								<tr>
+									<td><strong>location</strong></td>
+									<td>The page in which the recommendation is called</td>
+									<td>string</td>
+									<td>NO, but it's highly recommended to provid it in order to have a coherent and granular reporting, example:<i> product_page, landing_page, checkout</i></td>
+								</tr>
+								
+						</table>
+					</dd>  									
+					<dt><b>Response</b></dt>
+					<dd><pre>[ {'id': (string) resource id , 'title': (string) resource title (optional), 'media': (string) resource asset (optional), 'score': (integer) resource score },...] </pre>
+					  <br>
+					  example:
+					  <pre> [ { 'id': 'G_44178374_320', 'title': 'este en velours détails en... 129,90 €', 'media': 'http://assets.recolytic.com/G_44178374_320.jpg', 'score': 8 }, ...]</pre>
+					</dd>
+					<dt><b>Response message</b></dt>
+					<dd>
+						<table>
+							
+								<tr>
+									<th>HTTP Status Code</th>
+									<th>Message</th>
+								</tr>
+							
+							
+								<tr>
+									<td><strong>400</strong></td>
+									<td>invalid api key</td>
+								</tr>
+								<tr>											
+									<td><strong>400</strong></td>
+									<td>list of candidate resources is empty</td>
+								</tr>
+																			
+									<tr><td><strong>400</strong></td>
+									<td>candidate resources not provided</td>
+								</tr>
+					
+						</table> 										
+					</dd>
+				</dl>				
+		  	</li>	
+		  	<li>
+				<span>  GET</span>
+		  		<span >/api/engine/recommend/pcf/basket/{apikey}?rx={rxid1}&amp;rx={rxid2}&amp;at={actionTHR}&amp;l={limit}&amp;sk={skip}&amp;location={location}</span>
+				<span >Personalized Co-Occurence</span>	
+
+        		<dl>
+					<dt><b>Implementation Notes</b></dt>
+					<dd>This is a personal recommendation strategy. It uses collaborative techniques, it is the same as co-occurence except that it excludes the resources that user acted on.</dd>
+				</dl>
+		  	</li>
+		  	<li>
+		  		<span>  GET</span>
+		  		<span >/api/engine/recommend/pcf/uu/{apikey}?sc={scope}&amp;mid={memberId}&amp;l={limit}&amp;sk={skip}&amp;location={location}</span>
+				<span >User to user collaborative filtering</span>
+				<dl>
+					<dt><b>Implementation Notes</b></dt>
+					<dd>What other resources have been seen by users who saw a set of common resources as a given user.This is a personal recommendation strategy and it uses collaborative techniques. This is 3 steps process, first what resources the candidate  user acted on, then what are the users that acted on the same resources: these users form the user's neighboor, and finaly what other resources the user's neighboor acted on.</dd>
+					<dt>Scoring</dt>
+					<dd>The score for this strategy is computed as follow:
+						<ul class="unstyled">
+							<li>u<sub>0</sub>: the candidate user</li>
+							<li>N<sub>i</sub>: user's neighboor with i common resources with user u<sub>0</sub> and that acted on a resource rx. Note that u<sub>0</sub> did not act on rx</li>
+							<li>i represents the similarity between N<sub>i</sub> and u<sub>0</sub></li>
+							<li>The cardinality of N<sub>i</sub> neighboor size</li>
+							<li>The recommendation engine use a ratio between similarity and neighboor size: it considers that similarity is 100O time more importante than neighboor size. This is the default value, throught learning the engine will adjust this value.</li>
+							<li><i>rx score = rx.weight * similarity + 0.001 * neighboor size</i></li>
+						</ul>
+					</dd><dt><b>Parameters</b></dt>	
+					<dd>
+						<table>
+							
+								<tr>
+									<th>Parameter</th>
+									<th>Description</th>
+									<th>Type</th>
+									<th>Mandatory</th>
+								</tr>
+							
+							
+								<tr>
+									<td><strong>apikey</strong></td>
+									<td>subscription key</td>
+									<td>string</td>
+									<td>YES</td>
+								</tr>
+								<tr>
+									<td><strong>scope</strong></td>
+									<td>All the recommended resources belongs to the given scope, for example we don't want to recommend man pants when the user is on woman t-shirt catalog page. To address this requirement, we attach each product to one of these two scopes: <i>man, woman</i></td>
+									<td>array of string</td>
+									<td>NO</td>
+								</tr>
+								<tr>
+									<td><strong>memberId</strong></td>
+									<td>If specified, all the member channels will be taken into account</td>
+									<td>string</td>
+									<td>NO</td>
+								</tr>
+								<tr>
+									<td><strong>limit</strong></td>
+									<td>max number of recommended resources</td>
+									<td>int</td>
+									<td>NO, default is 5</td>
+								</tr>		
+								<tr>
+									<td><strong>skip</strong></td>
+									<td>Number of top ranking resources to skip, used to avoid returning obvious resources</td>
+									<td>int</td>
+									<td>NO</td>
+								</tr>
+								<tr>
+									<td><strong>location</strong></td>
+									<td>The page in which the recommendation is called</td>
+									<td>string</td>
+									<td>NO, but it's highly recommended to provid it in order to have a coherent and granular reporting, example:<i> product_page, landing_page, checkout</i></td>
+								</tr>
+								
+						</table>
+					</dd>  									
+					<dt><b>Response</b></dt>
+					<dd><pre>[ {'id': (string) resource id , 'title': (string) resource title (optional), 'media': (string) resource asset (optional), 'score': (integer) resource score },...] </pre>
+					  <br>
+					  example:
+					  <pre> [ { 'id': 'G_44178374_320', 'title': 'este en velours détails en... 129,90 €', 'media': 'http://assets.recolytic.com/G_44178374_320.jpg', 'score': 8 }, ...]</pre>
+					</dd>
+					<dt><b>Response message</b></dt>
+					<dd>
+						<table>
+							
+								<tr>
+									<th>HTTP Status Code</th>
+									<th>Message</th>
+								</tr>
+							
+							
+								<tr>
+									<td><strong>400</strong></td>
+									<td>invalid api key</td>
+								</tr>
+					
+						</table> 										
+					</dd>
+				</dl>				
+		  	</li>
+		  	<li>
+				<span>  GET</span>
+				<span >/api/engine/recommend/pcf/group/{apikey}&amp;m={mid1}&amp;m={mid2}&amp;l={limit}&amp;sk={skip}&amp;location={location}</span>
+				<span >Group recommender</span>
+				<dl>
+					<dt><b>Implementation Notes</b></dt>
+					<dd>This is a personal and collaborative recommendation strategy. It may be used to recommend music in a gym, restaurant for a group of friends. Place to visit...The strategy is similar to user to user collaborative filtering strategy.</dd>
+					<dt><b>Parameters</b></dt>	
+					<dd>
+						<table>
+							
+								<tr>
+									<th>Parameter</th>
+									<th>Description</th>
+									<th>Type</th>
+									<th>Mandatory</th>
+								</tr>
+							
+							
+								<tr>
+									<td><strong>apikey</strong></td>
+									<td>subscription key</td>
+									<td>string</td>
+									<td>YES</td>
+								</tr>
+								<tr>
+									<td><strong>mid<sub>i<sub></sub></sub></strong></td>
+									<td>List of member ids</td>
+									<td>array of string</td>
+									<td>NO</td>
+								</tr>
+								<tr>
+									<td><strong>limit</strong></td>
+									<td>max number of recommended resources</td>
+									<td>int</td>
+									<td>NO, default is 5</td>
+								</tr>		
+								<tr>
+									<td><strong>skip</strong></td>
+									<td>Number of top ranking resources to skip, used to avoid returning obvious resources</td>
+									<td>int</td>
+									<td>NO</td>
+								</tr>
+								<tr>
+									<td><strong>location</strong></td>
+									<td>The page in which the recommendation is called</td>
+									<td>string</td>
+									<td>NO, but it's highly recommended to provid it in order to have a coherent and granular reporting, example:<i> product_page, landing_page, checkout</i></td>
+								</tr>
+								
+						</table>
+					</dd>  									
+					<dt><b>Response</b></dt>
+					<dd><pre>[ {'id': (string) resource id , 'title': (string) resource title (optional), 'media': (string) resource asset (optional), 'score': (integer) resource score },...] </pre>
+					  <br>
+					  example:
+					  <pre> [ { 'id': 'G_44178374_320', 'title': 'este en velours détails en... 129,90 €', 'media': 'http://assets.recolytic.com/G_44178374_320.jpg', 'score': 8 }, ...]</pre>
+					</dd>
+					<dt><b>Response message</b></dt>
+					<dd>
+						<table>
+							
+								<tr>
+									<th>HTTP Status Code</th>
+									<th>Message</th>
+								</tr>
+							
+							
+								<tr>
+									<td><strong>400</strong></td>
+									<td>invalid api key</td>
+								</tr>
+								<tr>
+									<td><strong>400</strong></td>
+									<td>invalid parameter: m, members</td>
+								</tr>
+																	
+						</table> 										
+					</dd>
+				</dl>				
+		  	</li>
+		  	<li>
+		  		<span>  GET</span>
+		  		<span >/api/engine/recommend/p/recenltyVisited/{apikey}?mid={memberId}&amp;aw={maw}&amp;l={limit}&amp;sk={skip}&amp;location={location}</span>
+				<span >Returns recently visited resources</span>
+				<dl>
+					<dt><b>Implementation Notes</b></dt>
+					<dd>This is a personal ephemeral recommendation strategy. It returns the last resource that user acted on. We may also limit the action scopes with considering only actions with weight less than a reference value. To avoid showing to a customer a product that he already bought.</dd>
+					<dt>Scoring</dt>
+					<dd>Not applicable</dd>
+					<dt><b>Parameters</b></dt>	
+					<dd>
+						<table>
+							
+								<tr>
+									<th>Parameter</th>
+									<th>Description</th>
+									<th>Type</th>
+									<th>Mandatory</th>
+								</tr>
+							
+							
+								<tr>
+									<td><strong>apikey</strong></td>
+									<td>subscription key</td>
+									<td>string</td>
+									<td>YES</td>
+								</tr>
+								<tr>
+									<td><strong>maw</strong></td>
+									<td>Max Action Weight, if specified, all action bigger than this value are ignored</td>
+									<td>int</td>
+									<td>NO</td>
+								</tr>
+
+								<tr>
+									<td><strong>memberId</strong></td>
+									<td>If specified, all the member channels will be taken into account</td>
+									<td>string</td>
+									<td>NO</td>
+								</tr>
+								<tr>
+									<td><strong>limit</strong></td>
+									<td>max number of recommended resources</td>
+									<td>int</td>
+									<td>NO, default is 5</td>
+								</tr>		
+								<tr>
+									<td><strong>skip</strong></td>
+									<td>Number of top ranking resources to skip, used to avoid returning obvious resources</td>
+									<td>int</td>
+									<td>NO</td>
+								</tr>
+								<tr>
+									<td><strong>location</strong></td>
+									<td>The page in which the recommendation is called</td>
+									<td>string</td>
+									<td>NO, but it's highly recommended to provid it in order to have a coherent and granular reporting, example:<i> product_page, landing_page, checkout</i></td>
+								</tr>													
+
+								
+						</table>
+					</dd>  									
+					<dt><b>Response</b></dt>
+					<dd><pre>[ {'id': (string) resource id , 'title': (string) resource title (optional), 'media': (string) resource asset (optional) },...] </pre>
+					  <br>
+					  example:
+					  <pre> [ { 'id': 'G_44178374_320', 'title': 'este en velours détails en... 129,90 €', 'media': 'http://assets.recolytic.com/G_44178374_320.jpg'}, ...]</pre>
+					</dd>
+					<dt><b>Response message</b></dt>
+					<dd>
+						<table>
+							
+								<tr>
+									<th>HTTP Status Code</th>
+									<th>Message</th>
+								</tr>
+							
+							
+								<tr>
+									<td><strong>400</strong></td>
+									<td>invalid api key</td>
+								</tr>
+					
+						</table> 										
+					</dd>
+				</dl>				
+		  	</li>
+		  	
+		 </ul>
+		<h3>MESURE</h3>
+		<ul>
+			<li>
+	  			<span>  GET</span>
+				<span >/api/engine/measure/uptake/{apikey}?rxid={resourceId}&amp;location={location}&amp;strategy={strategy}</span>
+				<span >Capture user uptakes and its context</span>
+
+	        	<dl>
+					<dt><b>Implementation Notes</b></dt>
+					<dd>This methods should be called when a recommanded resource is visited by the user.</dd>
+					<dt><b>Parameters</b></dt>	
+					<dd>
+					<table>
+						
+							<tr>
+								<th>Parameter</th>
+								<th>Description</th>
+								<th>Type</th>
+								<th>Mandatory</th>
+							</tr>
+						
+						
+							<tr>
+								<td><strong>apikey</strong></td>
+								<td>subscription key</td>
+								<td>string</td>
+								<td>YES</td>
+							</tr>
+							<tr>
+								<td><strong>resourceId</strong></td>
+								<td>the id of resource that the user visited</td>
+								<td>string</td>
+								<td>YES</td>
+							</tr>
+							<tr>
+								<td><strong>location</strong></td>
+								<td>The page in which the recommendation is called</td>
+								<td>string</td>
+								<td>NO, but it's highly recommended to provid it in order to have a coherent and granular reporting, example:<i> product_page, landing_page, checkout</i></td>
+							</tr>
+							<tr>
+								<td><strong>strategy</strong></td>
+								<td>The used recommendation strategy</td>
+								<td>Enumeration</td>
+								<td>NO, but it's highly recommended to provid it in order to have a coherent and granular reporting. The accepted values are: <i>most_popular, high_priority, item_to_item, user_to_user, co_occurence, recently_visited, group</i></td>
+							</tr>
+						
+					</table>
+					</dd>  									
+					<dt><b>Response</b></dt>
+					<dd>{}</dd><dd>
+					</dd><dt><b>Response message</b></dt>
+					<dd>None.</dd>
+				</dl>
+		  	</li>
+		 <ul>
+	</body>
+</html>
