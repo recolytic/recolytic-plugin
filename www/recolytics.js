@@ -195,11 +195,143 @@
       }
     }
   }
+
+  /*
+  * RECOMMENDATION CALLS
+  * please 
+  */
+
+  function recommendApiCallHelper(url, params, callback) {
+    $.ajax({
+      url: url
+      , jsonp: "callback"
+      , dataType:'jsonp'
+      , data: params
+    }).done(callback).fail(function() {
+      callback([]);
+    });   
+  } 
+
+  Recolytic.prototype.recommendMostPopular = function(pageType, scopes, limit, skip, callback){
+    // /recommend/np/topn/{apikey}?sc={scope1}&sc={scope2}&l={limit}&sk={skip}&location={location}
+    var params = {};
+    params['location'] = pageType || 'not filled';
+    if(limit) params['l'] = limit;
+    if(skip) params['sk'] = skip;
+    recommendApiCallHelper(this.options.baseUrl+'recommend/np/topn/'+this.options.apiKey
+                          , params
+                          , callback);
+  }
+
+  Recolytic.prototype.recommendhighPriority = function(pageType, scopes, limit, skip, weightThreshold, callback){
+    ///api/engine/recommend/np/priorityrx/{apikey}?sc={scope1}&rxwt={weightTHR}&l={limit}&sk={skip}&location={location} High priority resources
+    var params = {};
+    params['location'] = pageType || 'not filled';
+    if(limit) params['l'] = limit;
+    if(skip) params['sk'] = skip;
+    if(weightThreshold) params['rxwt'] = weightThreshold;
+
+    recommendApiCallHelper(this.options.baseUrl+'recommend/np/priorityrx/'+this.options.apiKey
+                          , params
+                          , callback);       
+  }
+
+  Recolytic.prototype.recommendItemToItem = function(pageType, resourceId, isScoped, limit, skip, callback){
+    // /api/engine/recommend/cf/ii/{apikey}?rxid={resourceId}&sc={isScoped}&l={limit}&sk={skip}&location={location}
+    if(!resourceId) callback([]); 
+    else{
+      var params = {};
+      params['rxid'] = resourceId;
+      params['location'] = pageType || 'not filled';
+      if(limit) params['l'] = limit;
+      if(skip) params['sk'] = skip;
+      if(isScoped) params['sc'] = isScoped;
+
+      recommendApiCallHelper(this.options.baseUrl+'recommend/cf/ii/'+this.options.apiKey
+                          , params
+                          , callback);   
+    }     
+  }
+
+  Recolytic.prototype.recommendCoOccurence = function(pageType, resources, actionThreshold, limit, skip, callback){
+    //GET /api/engine/recommend/cf/basket/{apikey}?rx={rxid1}&rx={rxid2}&at={actionTHR}&l={limit}&sk={skip}&location={location} Co-Occurence
+    if(!resources) callback([]); 
+    else{
+      var params = {};
+      params['rx'] = resources;
+      params['location'] = pageType || 'not filled';
+      if(limit) params['l'] = limit;
+      if(skip) params['sk'] = skip;      
+      if(actionThreshold) params['at'] = actionThreshold;
+
+      recommendApiCallHelper(this.options.baseUrl+'recommend/cf/basket/'+this.options.apiKey
+                          , params
+                          , callback);               
+    }
+  }
+
+  Recolytic.prototype.recommendPersonalizedCoOccurence = function(pageType, resources, actionThreshold, limit, skip, callback){
+    // /api/engine/recommend/pcf/basket/{apikey}?rx={rxid1}&rx={rxid2}&at={actionTHR}&l={limit}&sk={skip}&location={location} Personalized Co-Occurence
+    if(!resources) callback([]); 
+    else{
+      var params = {};
+      params['rx'] = resources;
+      params['location'] = pageType || 'not filled';
+      if(limit) params['l'] = limit;
+      if(skip) params['sk'] = skip;      
+      if(actionThreshold) params['at'] = actionThreshold;
+
+      recommendApiCallHelper(this.options.baseUrl+'recommend/pcf/basket/'+this.options.apiKey
+                          , params
+                          , callback);               
+    }    
+  }  
+
+  Recolytic.prototype.recommendUserToUser = function(pageType, scopes, memberid, limit, skip, callback){
+    // /api/engine/recommend/pcf/uu/{apikey}?sc={scope}&mid={memberId}&l={limit}&sk={skip}&location={location} User to user collaborative filtering
+    var params = {};
+    params['location'] = pageType || 'not filled';
+    if(limit) params['l'] = limit;
+    if(skip) params['sk'] = skip;      
+    if(scopes) params['sc'] = scopes;   
+    if(memberid) params['mid'] = memberid;    
+
+
+    recommendApiCallHelper(this.options.baseUrl+'recommend/pcf/uu/'+this.options.apiKey
+                          , params
+                          , callback);         
+  }  
+
+  Recolytic.prototype.recommendToGroup = function(pageType, members, limit, skip, callback){
+    ///api/engine/recommend/pcf/group/{apikey}&m={mid1}&m={mid2}&l={limit}&sk={skip}&location={location} Group recommender
+    if(!members) callback([]); 
+    else{
+      var params = {};
+      params['m'] = members;
+      params['location'] = pageType || 'not filled';
+      if(limit) params['l'] = limit;
+      if(skip) params['sk'] = skip;      
+      recommendApiCallHelper(this.options.baseUrl+'recommend/pcf/group/'+this.options.apiKey
+                            , params
+                            , callback); 
+    }
+  }   
+
+  Recolytic.prototype.recommendRecenltyVisited = function(pageType, memberId, actionWeight,limit, skip, callback ){
+    var params = {};
+    params['location'] = pageType || 'not filled';  
+    if(limit) params['l'] = limit;
+    if(skip) params['sk'] = skip;  
+    if(memberId) params['mid'] = memberId;  
+    if(actionWeight) params['aw'] = actionWeight;   
+
+     ///api/engine/recommend/p/recenltyVisited/{apikey}?mid={memberId}&aw={maw}&l={limit}&sk={skip}&location={location} Returns recently visited resources
+    recommendApiCallHelper(this.options.baseUrl+'recommend/p/recenltyVisited/'+this.options.apiKey
+                          , params
+                          , callback); 
+  }   
+
   // init the recolytic object
   new Recolytic();
-
-  //recommendation object 
-  return actions;
-
 
 })();
