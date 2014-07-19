@@ -17,10 +17,10 @@
     else return false;
   }
 
-  function apiCollectCall(cb, params){
-    var self = this;
+  function apiCollectCall(params, cb){
+    var recolytic = window._rtq;
     $.ajax({
-      url:this.options.baseUrl+'collect/'+this.options.apiKey
+      url:recolytic.options.baseUrl+'collect/'+recolytic.options.apiKey
       , dataType:'jsonp'
       , data: params
       }).always(cb || function(){});
@@ -127,10 +127,10 @@
 
     if(!self.options.trackUpTake) return;
 
-    $('body').on('click', 'a[href$=recolytic-uptake]', function(ev){
+    $('body').on('click', "a[href*='recolytic-uptake']", function(ev){
       ev.preventDefault();
       var $el = $(ev.currentTarget)
-        , url = $el.attr('href').replace(/[?&]recolytic-uptake$/, '')
+        , url = $el.attr('href') //.replace(/[?&]recolytic-uptake$/, '')
         ;
 
       var rxid = getQueryStringParameterByName(url, "recolytic-id") ;
