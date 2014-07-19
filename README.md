@@ -8,8 +8,8 @@ Common <a href="http://www.recolytic.com">recolytic</a> clients are gathered in 
 
 Available clients
 
-* www : web browsers
-* ios : iphone / ipad
+* <a href="//github.com/recolytic/recolytic-plugin/tree/master/www">www</a>: web browsers
+* ios: iphone / ipad
 * android
 * shopify
 
