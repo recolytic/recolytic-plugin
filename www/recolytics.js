@@ -1,13 +1,3 @@
-/*
- **************************
- *                        *
- *   Recolytics Plugin    *
- *                        *
- *   by Benjamin Chelli   *
- *   the 2013-11-29       *
- *                        *
- **************************
- */
 ;(function(undef){
 
   /*
@@ -22,12 +12,13 @@
   }
 
   function tryGetOpenGraphAttribute(name){
-    var elem = $("meta[name='og\\:"+ name+ "']");
+    var elem = $("meta[property='og\\:"+ name+ "']");
     if(elem && elem.attr('content')) return elem.attr('content');
     else return false;
   }
 
   function apiCollectCall(cb, params){
+    var self = this;
     $.ajax({
       url:this.options.baseUrl+'collect/'+this.options.apiKey
       , dataType:'jsonp'
@@ -125,7 +116,8 @@
     this.options.apiKey       = this.options.apiKey       || false;
     this.options.autoCollect  = this.options.autoCollect  || true;
     this.options.trackUpTake  = this.options.trackUpTake  || true;
-    this.options.baseUrl      = this.options.baseUrl      || '//www.recolytic.com/api/engine/';
+    this.options.ograph  = this.options.ograph  || false;
+    this.options.baseUrl      = this.options.baseUrl      || '//www.api.recolytic.com/';
 
   }
 
