@@ -9,7 +9,7 @@ Common <a href="http://www.recolytic.com">recolytic</a> clients are gathered in 
 * RECOMMEND: Recommendation using all available strategies
 * MESURE: User uptakes
 
-Available clients
+Available clients:
 
 * <a href="//github.com/recolytic/recolytic-plugin/tree/master/www">www</a>: web browsers
 * ios: iphone / ipad
