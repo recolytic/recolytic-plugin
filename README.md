@@ -1,7 +1,6 @@
 # Getting started
 
-To get you started check <a href="http://www.recolytic.com/#/developer#api-doc">recolytic for developer</a>
-
+To get you started check <a href="http://www.recolytic.com/#/developer#api-doc">recolytic for developer</a>.
 # recolytic-plugin
 
 Common <a href="http://www.recolytic.com">recolytic</a> clients are gathered in recolytic-plugin project. Each client implements the interaction with recolytic web api: 
@@ -9,8 +8,6 @@ Common <a href="http://www.recolytic.com">recolytic</a> clients are gathered in 
 * COLLECT: Collect user actions
 * RECOMMEND: Recommendation using all available strategies
 * MESURE: User uptakes
-
-
 
 Available clients
 
